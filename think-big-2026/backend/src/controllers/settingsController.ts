@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import Settings from '../models/Settings';
+import { uploadToCloudinary } from '../utils/cloudinaryHelper';
 
 export const getSettings = async (req: Request, res: Response) => {
   try {
@@ -52,9 +53,7 @@ export const uploadSampleCertificate = async (req: Request, res: Response): Prom
       return res.status(400).json({ message: 'No file uploaded' });
     }
 
-    // Since Cloudinary isn't configured in .env, we'll simulate an upload URL or use a local path if stored locally.
-    // Assuming multer saved it to a local folder like uploads/
-    const fileUrl = `/uploads/${req.file.filename}`;
+    const fileUrl = await uploadToCloudinary(req.file.buffer, req.file.mimetype, 'think-big-2026/certificates', 'raw');
     
     let settings = await Settings.findOne();
     if (!settings) {

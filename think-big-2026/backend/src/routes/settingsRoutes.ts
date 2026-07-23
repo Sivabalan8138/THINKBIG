@@ -7,14 +7,7 @@ import { protect, adminCheck } from '../middleware/auth';
 const router = express.Router();
 
 // Setup local storage for multer
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, 'public/uploads/');
-  },
-  filename: (req, file, cb) => {
-    cb(null, `sample-certificate-${Date.now()}${path.extname(file.originalname)}`);
-  }
-});
+const storage = multer.memoryStorage();
 
 const upload = multer({ storage });
 

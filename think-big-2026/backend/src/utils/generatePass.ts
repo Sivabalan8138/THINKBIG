@@ -1,41 +1,33 @@
 import QRCode from 'qrcode';
 import PDFDocument from 'pdfkit';
-import path from 'path';
-import fs from 'fs';
 import { ITeam } from '../models/Team';
-
-const ensureUploadsDir = () => {
-  const dir = path.join(__dirname, '../../public/uploads');
-  if (!fs.existsSync(dir)) {
-    fs.mkdirSync(dir, { recursive: true });
-  }
-  return dir;
-};
+import { uploadToCloudinary } from './cloudinaryHelper';
 
 export const generateQR = async (teamId: string): Promise<string> => {
-  const uploadsDir = ensureUploadsDir();
-  const filename = `${teamId}-qr.png`;
-  const filepath = path.join(uploadsDir, filename);
-  await QRCode.toFile(filepath, teamId, {
+  const buffer = await QRCode.toBuffer(teamId, {
     color: {
       dark: '#000000',
       light: '#ffffff'
     }
   });
-  return `/uploads/${filename}`;
+  return await uploadToCloudinary(buffer, 'image/png', 'think-big-2026/qrcodes', 'image');
 };
 
 export const generateHallTicket = (team: ITeam, qrCodeUrl: string): Promise<string> => {
-  return new Promise((resolve, reject) => {
+  return new Promise(async (resolve, reject) => {
     try {
-      const uploadsDir = ensureUploadsDir();
-      const filename = `${team.teamId}-hallticket.pdf`;
-      const filepath = path.join(uploadsDir, filename);
-      const qrCodePath = path.join(__dirname, '../../public', qrCodeUrl);
-
       const doc = new PDFDocument({ margin: 50 });
-      const stream = fs.createWriteStream(filepath);
-      doc.pipe(stream);
+      const buffers: any[] = [];
+      doc.on('data', buffers.push.bind(buffers));
+      doc.on('end', async () => {
+        try {
+          const pdfData = Buffer.concat(buffers);
+          const url = await uploadToCloudinary(pdfData, 'application/pdf', 'think-big-2026/halltickets', 'raw');
+          resolve(url);
+        } catch (err) {
+          reject(err);
+        }
+      });
 
       // Title
       doc.fontSize(24).font('Helvetica-Bold').text('THINK BIG 2026', { align: 'center' });
@@ -69,23 +61,22 @@ export const generateHallTicket = (team: ITeam, qrCodeUrl: string): Promise<stri
       doc.moveDown(0.5);
 
       // QR Code
-      if (fs.existsSync(qrCodePath)) {
-        // Calculate center position for 100x100 image
-        const xOffset = (doc.page.width - 100) / 2;
-        doc.image(qrCodePath, xOffset, doc.y, {
-          fit: [100, 100],
-          align: 'center'
-        });
+      if (qrCodeUrl) {
+        try {
+          const response = await fetch(qrCodeUrl);
+          const arrayBuffer = await response.arrayBuffer();
+          const qrBuffer = Buffer.from(arrayBuffer);
+          const xOffset = (doc.page.width - 100) / 2;
+          doc.image(qrBuffer, xOffset, doc.y, {
+            fit: [100, 100],
+            align: 'center'
+          });
+        } catch (err) {
+          console.error('Failed to load QR code image for PDF', err);
+        }
       }
 
       doc.end();
-
-      stream.on('finish', () => {
-        resolve(`/uploads/${filename}`);
-      });
-      stream.on('error', (err) => {
-        reject(err);
-      });
     } catch (error) {
       reject(error);
     }

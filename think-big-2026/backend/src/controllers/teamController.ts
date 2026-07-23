@@ -3,6 +3,7 @@ import Team from '../models/Team';
 import ActivityLog from '../models/ActivityLog';
 import { sendRegistrationEmail, sendSubmissionEmail } from '../services/emailService';
 import { generateQR, generateHallTicket } from '../utils/generatePass';
+import { uploadToCloudinary } from '../utils/cloudinaryHelper';
 import path from 'path';
 
 export const registerTeam = async (req: Request, res: Response) => {
@@ -42,8 +43,8 @@ export const registerTeam = async (req: Request, res: Response) => {
     });
 
     // Send Confirmation Email
-    const fullQrUrl = `http://localhost:5000${qrPassUrl}`;
-    const fullHallTicketUrl = `http://localhost:5000${hallTicketUrl}`;
+    const fullQrUrl = qrPassUrl;
+    const fullHallTicketUrl = hallTicketUrl;
     await sendRegistrationEmail(teamLeader.email, teamName, savedTeam.teamId, fullQrUrl, fullHallTicketUrl);
 
     res.status(201).json({ message: 'Team registered successfully', team: savedTeam });
@@ -66,11 +67,11 @@ export const uploadFiles = async (req: Request, res: Response) => {
 
     if (files['ppt'] && files['ppt'][0]) {
       const p = files['ppt'][0];
-      team.files.pptUrl = p.path.startsWith('http') ? p.path : `/uploads/${p.filename}`;
+      team.files.pptUrl = await uploadToCloudinary(p.buffer, p.mimetype, 'think-big-2026/teams', 'raw');
     }
     if (files['pdf'] && files['pdf'][0]) {
       const p = files['pdf'][0];
-      team.files.pdfUrl = p.path.startsWith('http') ? p.path : `/uploads/${p.filename}`;
+      team.files.pdfUrl = await uploadToCloudinary(p.buffer, p.mimetype, 'think-big-2026/teams', 'raw');
     }
     if (abstract) {
       // Save the single text abstract to the problemStatement field
