@@ -1,1 +1,0 @@
-{"version":3,"file":"certificateRoutes.js","sourceRoot":"","sources":["certificateRoutes.ts"],"names":[],"mappings":";;;;;AAAA,sDAA8B;AAC9B,gFAA4F;AAC5F,6CAAyD;AAEzD,MAAM,MAAM,GAAG,iBAAO,CAAC,MAAM,EAAE,CAAC;AAEhC,MAAM,CAAC,IAAI,CAAC,gBAAgB,EAAE,cAAO,EAAE,iBAAU,EAAE,yCAAiB,CAAC,CAAC;AACtE,MAAM,CAAC,GAAG,CAAC,wBAAwB,EAAE,yCAAiB,CAAC,CAAC;kBAEzC,MAAM"}

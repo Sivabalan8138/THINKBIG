@@ -9,10 +9,6 @@ export default function ResultsPage() {
   const [published, setPublished] = useState(false);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    fetchSettingsAndLeaderboard();
-  }, []);
-
   const fetchSettingsAndLeaderboard = async () => {
     try {
       const settingsRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/settings`);
@@ -32,6 +28,10 @@ export default function ResultsPage() {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    fetchSettingsAndLeaderboard();
+  }, []);
 
   if (loading) {
     return (

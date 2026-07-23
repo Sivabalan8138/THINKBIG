@@ -2,7 +2,7 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
 
 export const api = {
   get: async (endpoint: string, token?: string) => {
-    const headers: any = {
+    const headers: Record<string, string> = {
       'Content-Type': 'application/json',
     };
     if (token) headers['Authorization'] = `Bearer ${token}`;
@@ -11,8 +11,8 @@ export const api = {
     return res.json();
   },
 
-  post: async (endpoint: string, body: any, token?: string) => {
-    const headers: any = {
+  post: async (endpoint: string, body: unknown, token?: string) => {
+    const headers: Record<string, string> = {
       'Content-Type': 'application/json',
     };
     if (token) headers['Authorization'] = `Bearer ${token}`;
@@ -26,7 +26,7 @@ export const api = {
   },
 
   upload: async (endpoint: string, formData: FormData, token?: string) => {
-    const headers: any = {};
+    const headers: Record<string, string> = {};
     if (token) headers['Authorization'] = `Bearer ${token}`;
 
     const res = await fetch(`${API_URL}${endpoint}`, {

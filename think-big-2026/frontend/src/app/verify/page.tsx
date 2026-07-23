@@ -12,14 +12,6 @@ function VerifyForm() {
   const searchParams = useSearchParams();
   const router = useRouter();
 
-  useEffect(() => {
-    const idFromUrl = searchParams?.get('id');
-    if (idFromUrl) {
-      setCertId(idFromUrl);
-      verifyWithId(idFromUrl);
-    }
-  }, [searchParams]);
-
   const verifyWithId = async (id: string) => {
     if (!id) return;
     setLoading(true);
@@ -32,12 +24,22 @@ function VerifyForm() {
       } else {
         setResult({ valid: false, message: data.message || 'Invalid Certificate' });
       }
-    } catch (e) {
+    } catch {
       setResult({ valid: false, message: 'Server error' });
     } finally {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    const idFromUrl = searchParams?.get('id');
+    if (idFromUrl) {
+       
+      setCertId(idFromUrl);
+      verifyWithId(idFromUrl);
+    }
+   
+  }, [searchParams]);
 
   const handleVerify = (e: React.FormEvent) => {
     e.preventDefault();
