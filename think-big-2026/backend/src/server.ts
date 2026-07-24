@@ -38,12 +38,11 @@ const seedAdmin = async () => {
   }
 };
 
-connectDB().then(() => {
-  seedAdmin();
-});
-
 // Middleware
-app.use(cors());
+app.use(cors({
+  origin: ['http://localhost:3000', process.env.FRONTEND_URL || ''],
+  credentials: true
+}));
 app.use(express.json());
 app.use('/uploads', express.static(path.join(__dirname, '../public/uploads')));
 
@@ -62,8 +61,41 @@ app.get('/', (req, res) => {
   res.send('THINK BIG 2026 API is running...');
 });
 
-const PORT = process.env.PORT || 5000;
-
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+// Health Endpoint
+app.get('/health', (req, res) => {
+  res.status(200).json({
+    status: 'ok',
+    database: 'connected',
+    time: new Date().toISOString()
+  });
 });
+
+const requiredEnvVars = [
+  'PORT', 'MONGO_URI', 'JWT_SECRET', 'EMAIL_USER', 'EMAIL_PASS',
+  'CLOUDINARY_CLOUD_NAME', 'CLOUDINARY_API_KEY', 'CLOUDINARY_API_SECRET'
+];
+
+requiredEnvVars.forEach(envVar => {
+  if (!process.env[envVar]) {
+    console.warn(`Missing Environment Variable:\n${envVar}`);
+  }
+});
+
+const startServer = async () => {
+  try {
+    await connectDB();
+    await seedAdmin();
+    
+    const PORT = process.env.PORT || 5000;
+    app.listen(PORT, () => {
+      console.log('Server Started');
+      console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
+      console.log(`Railway Port: ${PORT}`);
+    });
+  } catch (error) {
+    console.error('Failed to start server:', error);
+    process.exit(1);
+  }
+};
+
+startServer();
