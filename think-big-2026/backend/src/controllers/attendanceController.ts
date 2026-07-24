@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import Team from '../models/Team';
-import ExcelJS from 'exceljs';
+import * as ExcelJS from 'exceljs';
 import PDFDocument from 'pdfkit';
 import { Document, Packer, Paragraph, Table, TableRow, TableCell, TextRun } from 'docx';
 
